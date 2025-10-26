@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Tilt3D from "./ui/tilt";
+import ProgressDots from "./ui/progress-dots";
 
 interface TrueFalseGameProps {
   onComplete: (score: number) => void;
@@ -104,28 +105,19 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
         <div className="orb bg-pink-300 size-36 -bottom-10 -right-8" />
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
+          <h2 className="text-4xl font-black gradient-text drop-shadow-lg mb-2 tracking-wide">
             ✓✗ Đúng Hay Sai?
           </h2>
-          <p className="text-white/90 text-sm drop-shadow-md mb-4">
+          <p className="text-white/90 text-sm drop-shadow-md mb-4 float-soft">
             Chọn Đúng hoặc Sai
           </p>
 
           {/* Progress Indicator */}
-          <div className="flex justify-center gap-2">
-            {questions.map((_, i) => (
-              <div
-                key={i}
-                className={`h-2 w-6 rounded-full transition-all ${
-                  i === currentQuestion
-                    ? "bg-white w-10"
-                    : i < currentQuestion
-                    ? "bg-green-300 w-2"
-                    : "bg-white/50 w-2"
-                }`}
-              />
-            ))}
-          </div>
+          <ProgressDots
+            total={questions.length}
+            current={currentQuestion}
+            doneColor="bg-emerald-300"
+          />
         </div>
 
         {/* Question Area */}
@@ -134,8 +126,8 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
             <p className="text-white text-sm font-bold mb-4 drop-shadow-md">
               Câu {currentQuestion + 1} / {questions.length}
             </p>
-            <div className="bg-white/10 backdrop-blur-md rounded-lg p-5 border border-white/30 mb-6">
-              <p className="text-4xl font-bold text-white drop-shadow-lg">
+            <div className="bg-white/10 backdrop-blur-md rounded-lg p-5 border border-white/30 mb-6 shine-3d">
+              <p className="text-4xl font-extrabold text-white drop-shadow-lg">
                 {question.question}
               </p>
             </div>
@@ -145,7 +137,7 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
               <button
                 onClick={() => handleAnswer(true)}
                 disabled={selectedAnswer !== null}
-                className={`py-5 px-6 rounded-xl font-bold text-2xl transition-all border shadow-lg truefalse-glass ${
+                className={`py-5 px-6 rounded-xl font-extrabold text-2xl transition-all border shadow-lg truefalse-glass button-shimmer ${
                   selectedAnswer === true
                     ? feedback === "correct"
                       ? "bg-emerald-500 text-white"
@@ -158,7 +150,7 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
               <button
                 onClick={() => handleAnswer(false)}
                 disabled={selectedAnswer !== null}
-                className={`py-5 px-6 rounded-xl font-bold text-2xl transition-all border shadow-lg truefalse-glass ${
+                className={`py-5 px-6 rounded-xl font-extrabold text-2xl transition-all border shadow-lg truefalse-glass button-shimmer ${
                   selectedAnswer === false
                     ? feedback === "correct"
                       ? "bg-emerald-500 text-white"

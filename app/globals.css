@@ -206,6 +206,48 @@
     }
   }
 
+  /* Extra polish utilities */
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-white via-rose-100 to-fuchsia-200;
+  }
+  .button-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .button-shimmer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 120%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.6) 50%,
+      transparent 100%
+    );
+    transform: skewX(-20deg);
+    animation: shimmer 2.2s infinite;
+  }
+  @keyframes shimmer {
+    100% {
+      left: 150%;
+    }
+  }
+  .float-soft {
+    animation: float-soft 4s ease-in-out infinite;
+  }
+  @keyframes float-soft {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
   /* Per-game theming */
   .matching-gradient {
     @apply bg-gradient-to-br from-cyan-500 to-sky-500;

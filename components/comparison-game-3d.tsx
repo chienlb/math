@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Tilt3D from "./ui/tilt";
+import ProgressDots from "./ui/progress-dots";
 
 interface ComparisonGameProps {
   onComplete: (score: number) => void;
@@ -144,16 +145,11 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
           <p className="text-white/90 text-sm drop-shadow-md mb-4">
             Chọn đáp án đúng
           </p>
-          <div className="flex justify-center gap-2">
-            {questions.map((_, i) => (
-              <div
-                key={i}
-                className={`h-2 w-6 rounded-full transition-all ${
-                  i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
-                }`}
-              />
-            ))}
-          </div>
+          <ProgressDots
+            total={questions.length}
+            current={currentQuestion}
+            doneColor="bg-emerald-300"
+          />
         </div>
 
         {/* Question */}

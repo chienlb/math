@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
 import Tilt3D from "./ui/tilt";
+import ProgressDots from "./ui/progress-dots";
 
 interface MatchingGameProps {
   onComplete: (score: number) => void;
@@ -196,16 +197,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
           </p>
 
           {/* Progress Indicator */}
-          <div className="flex justify-center gap-2">
-            {questions.map((_, i) => (
-              <div
-                key={i}
-                className={`h-2 w-6 rounded-full transition-all ${
-                  i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
-                }`}
-              />
-            ))}
-          </div>
+          <ProgressDots total={questions.length} current={currentQuestion} />
         </div>
 
         {/* Matching Area */}

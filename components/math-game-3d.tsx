@@ -1,11 +1,12 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   OrbitControls,
   PerspectiveCamera,
   Environment,
   Float,
+  Text3D,
 } from "@react-three/drei";
 import GameMenu from "./game-menu-3d";
 import MatchingGame3D from "./matching-game-3d";
@@ -39,7 +40,7 @@ export default function MathGame3D() {
             color="#00d4ff"
           />
 
-          <FloatingShapes />
+          <FloatingShapes theme={gameMode} />
 
           <OrbitControls
             enableZoom={false}
@@ -82,36 +83,171 @@ export default function MathGame3D() {
   );
 }
 
-function FloatingShapes() {
-  const colors = [
-    "#6366F1", // indigo-500
-    "#8B5CF6", // violet-500
-    "#06B6D4", // cyan-500
-    "#0EA5E9", // sky-500
-    "#22D3EE", // cyan-400
-    "#818CF8", // indigo-400
-    "#A78BFA", // violet-400
-    "#38BDF8", // sky-400
-  ];
+function FloatingShapes({
+  theme,
+}: {
+  theme: "menu" | "matching" | "comparison" | "fillblank" | "truefalse";
+}) {
+  const paletteByTheme: Record<
+    "menu" | "matching" | "comparison" | "fillblank" | "truefalse",
+    string[]
+  > = {
+    menu: [
+      "#6366F1",
+      "#8B5CF6",
+      "#06B6D4",
+      "#0EA5E9",
+      "#22D3EE",
+      "#818CF8",
+      "#A78BFA",
+      "#38BDF8",
+    ],
+    matching: [
+      "#06B6D4", // cyan-500
+      "#22D3EE", // cyan-400
+      "#0EA5E9", // sky-500
+      "#38BDF8", // sky-400
+      "#0891B2", // cyan-700
+      "#67E8F9", // cyan-200
+      "#22D3EE",
+      "#06B6D4",
+    ],
+    comparison: [
+      "#6366F1", // indigo-500
+      "#818CF8", // indigo-400
+      "#8B5CF6", // violet-500
+      "#A78BFA", // violet-400
+      "#4F46E5", // indigo-600
+      "#C4B5FD", // violet-300
+      "#6366F1",
+      "#8B5CF6",
+    ],
+    fillblank: [
+      "#10B981", // emerald-500
+      "#34D399", // emerald-400
+      "#14B8A6", // teal-500
+      "#2DD4BF", // teal-400
+      "#059669", // emerald-600
+      "#99F6E4", // teal-200
+      "#10B981",
+      "#14B8A6",
+    ],
+    truefalse: [
+      "#D946EF", // fuchsia-500
+      "#F472B6", // pink-400
+      "#E879F9", // fuchsia-400
+      "#FB7185", // rose-400
+      "#A21CAF", // fuchsia-800
+      "#F0ABFC", // fuchsia-300
+      "#EC4899", // pink-500
+      "#D946EF",
+    ],
+  };
+  const colors = paletteByTheme[theme];
+
+  // Deterministic PRNG (mulberry32)
+  function mulberry32(a: number) {
+    return function () {
+      let t = (a += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function themeSeed(str: string) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0;
+    return Math.abs(h) + 1;
+  }
+
+  function generatePositions(
+    count: number,
+    xRange: [number, number],
+    yRange: [number, number],
+    zRange: [number, number],
+    seed: number,
+    minRadiusFromCenter = 0
+  ): [number, number, number][] {
+    const rand = mulberry32(seed);
+    const positions: [number, number, number][] = [];
+    const maxTries = count * 20;
+    let tries = 0;
+    while (positions.length < count && tries < maxTries) {
+      tries++;
+      const x = xRange[0] + rand() * (xRange[1] - xRange[0]);
+      const y = yRange[0] + rand() * (yRange[1] - yRange[0]);
+      const z = zRange[0] + rand() * (zRange[1] - zRange[0]);
+      const r2 = x * x + y * y;
+      if (
+        minRadiusFromCenter > 0 &&
+        r2 < minRadiusFromCenter * minRadiusFromCenter
+      )
+        continue;
+      positions.push([x, y, z]);
+    }
+    // If not enough due to min radius, fill remaining without radius constraint
+    while (positions.length < count) {
+      const x = xRange[0] + Math.random() * (xRange[1] - xRange[0]);
+      const y = yRange[0] + Math.random() * (yRange[1] - yRange[0]);
+      const z = zRange[0] + Math.random() * (zRange[1] - zRange[0]);
+      positions.push([x, y, z]);
+    }
+    return positions;
+  }
+
+  const seedBase = useMemo(() => themeSeed(theme), [theme]);
+  const cubePositions = useMemo(
+    () => generatePositions(8, [-12, 12], [-7, 7], [-11, -6], seedBase + 11, 3),
+    [seedBase]
+  );
+  const spherePositions = useMemo(
+    () =>
+      generatePositions(6, [-12, 12], [-7, 7], [-10, -6], seedBase + 23, 2.5),
+    [seedBase]
+  );
+  const torusPositions = useMemo(
+    () =>
+      generatePositions(
+        4,
+        [-12, 12],
+        [-7, 7],
+        [-11.5, -6.5],
+        seedBase + 37,
+        3.5
+      ),
+    [seedBase]
+  );
+  const symbolPositions = useMemo(
+    () =>
+      generatePositions(
+        14,
+        [-12, 12],
+        [-7, 7],
+        [-11.5, -7.5],
+        seedBase + 53,
+        2
+      ),
+    [seedBase]
+  );
+  const numberPositions = useMemo(
+    () =>
+      generatePositions(10, [-12, 12], [-7, 7], [-12, -7], seedBase + 77, 2.5),
+    [seedBase]
+  );
 
   return (
     <>
       {/* Floating Cubes */}
-      {[...Array(8)].map((_, i) => (
+      {cubePositions.map((pos, i) => (
         <Float
           key={`cube-${i}`}
           speed={2 + i * 0.3}
           rotationIntensity={2}
           floatIntensity={2}
         >
-          <mesh
-            position={[
-              Math.cos(i * 0.785) * 5,
-              Math.sin(i * 0.785) * 5,
-              -8 + i * 0.5,
-            ]}
-          >
-            <boxGeometry args={[0.6, 0.6, 0.6]} />
+          <mesh position={pos}>
+            <boxGeometry args={[0.8, 0.8, 0.8]} />
             <meshStandardMaterial
               color={colors[i]}
               emissive={colors[i]}
@@ -124,21 +260,15 @@ function FloatingShapes() {
       ))}
 
       {/* Floating Spheres */}
-      {[...Array(6)].map((_, i) => (
+      {spherePositions.map((pos, i) => (
         <Float
           key={`sphere-${i}`}
           speed={1.5 + i * 0.2}
           rotationIntensity={1.5}
           floatIntensity={1.5}
         >
-          <mesh
-            position={[
-              Math.cos(i * 1.047) * 6,
-              Math.sin(i * 1.047) * 6,
-              -6 + i * 0.3,
-            ]}
-          >
-            <sphereGeometry args={[0.4, 32, 32]} />
+          <mesh position={pos}>
+            <sphereGeometry args={[0.5, 32, 32]} />
             <meshStandardMaterial
               color={colors[(i + 4) % colors.length]}
               emissive={colors[(i + 4) % colors.length]}
@@ -151,21 +281,15 @@ function FloatingShapes() {
       ))}
 
       {/* Floating Torus */}
-      {[...Array(4)].map((_, i) => (
+      {torusPositions.map((pos, i) => (
         <Float
           key={`torus-${i}`}
           speed={1 + i * 0.25}
           rotationIntensity={2.5}
           floatIntensity={1}
         >
-          <mesh
-            position={[
-              Math.cos(i * 1.57) * 7,
-              Math.sin(i * 1.57) * 7,
-              -7 + i * 0.4,
-            ]}
-          >
-            <torusGeometry args={[0.5, 0.15, 16, 100]} />
+          <mesh position={pos}>
+            <torusGeometry args={[0.65, 0.18, 16, 100]} />
             <meshStandardMaterial
               color={colors[(i + 2) % colors.length]}
               emissive={colors[(i + 2) % colors.length]}
@@ -174,6 +298,82 @@ function FloatingShapes() {
               roughness={0.2}
             />
           </mesh>
+        </Float>
+      ))}
+
+      {/* Floating 3D math symbols */}
+      {symbolPositions.map((pos, i) => {
+        const symbols = ["+", "-", "×", ":"];
+        const sym = symbols[i % symbols.length];
+        const color = colors[(i + 2) % colors.length];
+        const size = 1.2 + (i % 3) * 0.25;
+        return (
+          <Float
+            key={`sym3d-${i}`}
+            speed={0.9 + (i % 5) * 0.18}
+            rotationIntensity={0.8}
+            floatIntensity={1.0}
+          >
+            <Text3D
+              font="https://unpkg.com/three@0.159.0/examples/fonts/helvetiker_bold.typeface.json"
+              size={size}
+              height={0.34}
+              bevelEnabled
+              bevelThickness={0.06}
+              bevelSize={0.03}
+              bevelSegments={5}
+              position={pos}
+            >
+              {sym}
+              <meshPhysicalMaterial
+                color={color}
+                emissive={colors[(i + 4) % colors.length]}
+                emissiveIntensity={0.6}
+                metalness={0.6}
+                roughness={0.25}
+                clearcoat={1}
+                clearcoatRoughness={0.1}
+                sheen={1}
+                sheenColor={color}
+                toneMapped={false}
+              />
+            </Text3D>
+          </Float>
+        );
+      })}
+
+      {/* Floating extruded 3D numbers */}
+      {numberPositions.map((pos, i) => (
+        <Float
+          key={`num3d-${i}`}
+          speed={0.85 + (i % 4) * 0.2}
+          rotationIntensity={0.7}
+          floatIntensity={0.9}
+        >
+          <Text3D
+            font="https://unpkg.com/three@0.159.0/examples/fonts/helvetiker_bold.typeface.json"
+            size={1.2}
+            height={0.36}
+            bevelEnabled
+            bevelThickness={0.06}
+            bevelSize={0.03}
+            bevelSegments={5}
+            position={pos}
+          >
+            {String(i)}
+            <meshPhysicalMaterial
+              color={colors[(i + 6) % colors.length]}
+              emissive={colors[(i + 4) % colors.length]}
+              emissiveIntensity={0.55}
+              metalness={0.7}
+              roughness={0.22}
+              clearcoat={1}
+              clearcoatRoughness={0.12}
+              sheen={1}
+              sheenColor="#ffffff"
+              toneMapped={false}
+            />
+          </Text3D>
         </Float>
       ))}
     </>
