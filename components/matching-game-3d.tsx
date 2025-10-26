@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
+import Tilt3D from "./ui/tilt";
 
 interface MatchingGameProps {
   onComplete: (score: number) => void;
@@ -180,164 +181,169 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
   };
 
   return (
-    <div className="matching-gradient rounded-2xl p-7 max-w-4xl shadow-2xl border border-white/30 text-white">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
-          🔗 Nối Cặp Số
-        </h2>
-        <p className="text-white/90 text-sm drop-shadow-md mb-4">
-          Kéo từ trái sang phải để nối cặp
-        </p>
+    <Tilt3D className="shine-3d">
+      <div className="matching-gradient select-none rounded-2xl p-7 max-w-4xl shadow-2xl border border-white/30 text-white glow-3d relative overflow-hidden">
+        {/* Decorative orbs */}
+        <div className="orb bg-cyan-300 size-56 -top-10 -left-10" />
+        <div className="orb bg-sky-300 size-40 -bottom-10 -right-10" />
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
+            🔗 Nối Cặp Số
+          </h2>
+          <p className="text-white/90 text-sm drop-shadow-md mb-4">
+            Kéo từ trái sang phải để nối cặp
+          </p>
 
-        {/* Progress Indicator */}
-        <div className="flex justify-center gap-2">
-          {questions.map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 w-6 rounded-full transition-all ${
-                i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Matching Area */}
-      <div
-        ref={containerRef}
-        className="relative glass-card rounded-xl p-5 mb-6 matching-glass"
-      >
-        {/* SVG for connection lines */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none"
-          style={{ overflow: "visible" }}
-        >
-          {/* Completed connections */}
-          {connections.map((conn, idx) => (
-            <path
-              key={`connection-${idx}`}
-              d={getConnectionPath(conn.from, conn.to)}
-              stroke="#10b981"
-              strokeWidth="3"
-              fill="none"
-              strokeLinecap="round"
-              filter="drop-shadow(0 0 3px rgba(16, 185, 129, 0.8))"
-            />
-          ))}
-
-          {/* Drag preview line */}
-          {dragging !== null && (
-            <path
-              d={getDragPreviewPath()}
-              stroke="#22d3ee"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="6,3"
-              opacity={0.7}
-            />
-          )}
-        </svg>
-
-        <div className="grid grid-cols-3 gap-4 relative z-10">
-          {/* Left Column */}
-          <div className="space-y-3">
-            <h3 className="font-bold text-center mb-3 text-sm text-white drop-shadow-md">
-              📍 Số Ban Đầu
-            </h3>
-            {question.pairs.map((pair, i) => {
-              const isConnected = connections.some((c) => c.from === i);
-              return (
-                <div
-                  key={`left-${i}`}
-                  ref={(el) => {
-                    leftItemsRef.current[i] = el;
-                  }}
-                  onMouseDown={() => setDragging(i)}
-                  className={`bg-white/10 border border-white/30 rounded-xl p-4 text-white font-bold text-2xl text-center cursor-grab active:cursor-grabbing shadow-lg hover:bg-white/20 hover:shadow-xl transition-all ${
-                    isConnected ? "ring-4 ring-emerald-300" : ""
-                  }`}
-                >
-                  {pair.original}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Middle Column */}
-          <div className="flex flex-col justify-center items-center space-y-3">
-            {question.pairs.map((pair, i) => (
+          {/* Progress Indicator */}
+          <div className="flex justify-center gap-2">
+            {questions.map((_, i) => (
               <div
-                key={`label-${i}`}
-                className="text-sm font-bold text-white text-center bg-white/10 px-3 py-1.5 rounded-lg shadow-md border border-white/30"
-              >
-                {pair.operation}
-              </div>
+                key={i}
+                className={`h-2 w-6 rounded-full transition-all ${
+                  i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
+                }`}
+              />
             ))}
           </div>
+        </div>
 
-          {/* Right Column */}
-          <div className="space-y-3">
-            <h3 className="font-bold text-center mb-3 text-sm text-white drop-shadow-md">
-              ✓ Kết Quả
-            </h3>
-            {rightOrder.map((pairIndex, i) => {
-              const isConnected = connections.some((c) => c.to === pairIndex);
-              return (
+        {/* Matching Area */}
+        <div
+          ref={containerRef}
+          className="relative glass-card rounded-xl p-5 mb-6 matching-glass"
+        >
+          {/* SVG for connection lines */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            style={{ overflow: "visible" }}
+          >
+            {/* Completed connections */}
+            {connections.map((conn, idx) => (
+              <path
+                key={`connection-${idx}`}
+                d={getConnectionPath(conn.from, conn.to)}
+                stroke="#10b981"
+                strokeWidth="3"
+                fill="none"
+                strokeLinecap="round"
+                filter="drop-shadow(0 0 3px rgba(16, 185, 129, 0.8))"
+              />
+            ))}
+
+            {/* Drag preview line */}
+            {dragging !== null && (
+              <path
+                d={getDragPreviewPath()}
+                stroke="#22d3ee"
+                strokeWidth="2"
+                fill="none"
+                strokeDasharray="6,3"
+                opacity={0.7}
+              />
+            )}
+          </svg>
+
+          <div className="grid grid-cols-3 gap-4 relative z-10">
+            {/* Left Column */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-center mb-3 text-sm text-white drop-shadow-md">
+                📍 Số Ban Đầu
+              </h3>
+              {question.pairs.map((pair, i) => {
+                const isConnected = connections.some((c) => c.from === i);
+                return (
+                  <div
+                    key={`left-${i}`}
+                    ref={(el) => {
+                      leftItemsRef.current[i] = el;
+                    }}
+                    onMouseDown={() => setDragging(i)}
+                    className={`bg-white/10 border border-white/30 rounded-xl p-4 text-white font-bold text-2xl text-center cursor-grab active:cursor-grabbing shadow-lg hover:bg-white/20 hover:shadow-xl transition-all ${
+                      isConnected ? "ring-4 ring-emerald-300" : ""
+                    }`}
+                  >
+                    {pair.original}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Middle Column */}
+            <div className="flex flex-col justify-center items-center space-y-3">
+              {question.pairs.map((pair, i) => (
                 <div
-                  key={`right-${i}`}
-                  ref={(el) => {
-                    if (el) rightItemsRef.current[pairIndex] = el;
-                  }}
-                  data-right-index={pairIndex}
-                  className={`bg-white/10 border border-white/30 rounded-xl p-4 text-white font-bold text-2xl text-center cursor-pointer shadow-lg hover:bg-white/20 hover:shadow-xl transition-all ${
-                    isConnected ? "ring-4 ring-emerald-300" : ""
-                  }`}
+                  key={`label-${i}`}
+                  className="text-sm font-bold text-white text-center bg-white/10 px-3 py-1.5 rounded-lg shadow-md border border-white/30"
                 >
-                  {question.pairs[pairIndex].reduced}
+                  {pair.operation}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-3">
+              <h3 className="font-bold text-center mb-3 text-sm text-white drop-shadow-md">
+                ✓ Kết Quả
+              </h3>
+              {rightOrder.map((pairIndex, i) => {
+                const isConnected = connections.some((c) => c.to === pairIndex);
+                return (
+                  <div
+                    key={`right-${i}`}
+                    ref={(el) => {
+                      if (el) rightItemsRef.current[pairIndex] = el;
+                    }}
+                    data-right-index={pairIndex}
+                    className={`bg-white/10 border border-white/30 rounded-xl p-4 text-white font-bold text-2xl text-center cursor-pointer shadow-lg hover:bg-white/20 hover:shadow-xl transition-all ${
+                      isConnected ? "ring-4 ring-emerald-300" : ""
+                    }`}
+                  >
+                    {question.pairs[pairIndex].reduced}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Feedback */}
-      {feedback && (
-        <div
-          className={`text-center py-2 rounded-lg font-bold text-xs mb-3 border ${
-            feedback === "correct"
-              ? "bg-emerald-500 text-white border-white/30"
-              : "bg-rose-500 text-white border-white/30"
-          }`}
+        {/* Feedback */}
+        {feedback && (
+          <div
+            className={`text-center py-2 rounded-lg font-bold text-xs mb-3 border ${
+              feedback === "correct"
+                ? "bg-emerald-500 text-white border-white/30"
+                : "bg-rose-500 text-white border-white/30"
+            }`}
+          >
+            {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
+          </div>
+        )}
+
+        {/* Progress Stats */}
+        <div className="flex justify-between items-center mb-4 px-4 text-sm">
+          <div className="text-center flex-1">
+            <p className="text-white font-bold">Đã nối</p>
+            <p className="text-xl font-bold text-white drop-shadow-md">
+              {connections.length}/{question.pairs.length}
+            </p>
+          </div>
+          <div className="text-center flex-1">
+            <p className="text-white font-bold">Câu hỏi</p>
+            <p className="text-xl font-bold text-white drop-shadow-md">
+              {currentQuestion + 1}/{questions.length}
+            </p>
+          </div>
+        </div>
+
+        {/* Back Button */}
+        <button
+          onClick={() => onComplete(0)}
+          className="w-full btn-glass py-3 text-sm"
         >
-          {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
-        </div>
-      )}
-
-      {/* Progress Stats */}
-      <div className="flex justify-between items-center mb-4 px-4 text-sm">
-        <div className="text-center flex-1">
-          <p className="text-white font-bold">Đã nối</p>
-          <p className="text-xl font-bold text-white drop-shadow-md">
-            {connections.length}/{question.pairs.length}
-          </p>
-        </div>
-        <div className="text-center flex-1">
-          <p className="text-white font-bold">Câu hỏi</p>
-          <p className="text-xl font-bold text-white drop-shadow-md">
-            {currentQuestion + 1}/{questions.length}
-          </p>
-        </div>
+          ← Quay Lại
+        </button>
       </div>
-
-      {/* Back Button */}
-      <button
-        onClick={() => onComplete(0)}
-        className="w-full btn-glass py-3 text-sm"
-      >
-        ← Quay Lại
-      </button>
-    </div>
+    </Tilt3D>
   );
 }

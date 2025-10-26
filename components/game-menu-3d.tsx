@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Tilt3D from "./ui/tilt";
 
 interface GameMenuProps {
   onSelectGame: (
@@ -55,36 +56,37 @@ export default function GameMenu3D({ onSelectGame }: GameMenuProps) {
       {/* Game Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto px-6">
         {games.map((game) => (
-          <button
-            key={game.id}
-            onClick={() => onSelectGame(game.id as any)}
-            onMouseEnter={() => setHoveredGame(game.id)}
-            onMouseLeave={() => setHoveredGame(null)}
-            className={`
+          <Tilt3D key={game.id} className="shine-3d">
+            <button
+              onClick={() => onSelectGame(game.id as any)}
+              onMouseEnter={() => setHoveredGame(game.id)}
+              onMouseLeave={() => setHoveredGame(null)}
+              className={`
               relative group overflow-hidden rounded-2xl p-8
               transform transition-all duration-300
               ${hoveredGame === game.id ? "scale-105 shadow-xl" : "shadow-lg"}
               bg-gradient-to-br ${game.color}
               hover:shadow-xl
             `}
-          >
-            {/* Animated Background */}
-            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            >
+              {/* Animated Background */}
+              <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-            {/* Content */}
-            <div className="relative z-10">
-              <div className="text-5xl mb-3">{game.icon}</div>
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {game.title}
-              </h2>
-              <p className="text-white/90 text-sm">{game.description}</p>
+              {/* Content */}
+              <div className="relative z-10">
+                <div className="text-5xl mb-3">{game.icon}</div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  {game.title}
+                </h2>
+                <p className="text-white/90 text-sm">{game.description}</p>
 
-              {/* Play Button */}
-              <div className="mt-5 inline-block px-6 py-2 btn-glass font-semibold transition-all text-base">
-                Chơi Ngay →
+                {/* Play Button */}
+                <div className="mt-5 inline-block px-6 py-2 btn-glass font-semibold transition-all text-base">
+                  Chơi Ngay →
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          </Tilt3D>
         ))}
       </div>
 

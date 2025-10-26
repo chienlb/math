@@ -170,6 +170,42 @@
     @apply bg-white/20 text-white border border-white/30 rounded-lg shadow-md hover:bg-white/30 transition-colors;
   }
 
+  /* 3D visual utilities */
+  .orb {
+    @apply absolute rounded-full blur-2xl opacity-30 pointer-events-none;
+    filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.35));
+  }
+  .glow-3d {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25),
+      inset 0 0 40px rgba(255, 255, 255, 0.12);
+  }
+  .shine-3d {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine-3d::after {
+    content: "";
+    position: absolute;
+    inset: -150% -150% auto auto;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 180deg at 50% 50%,
+      rgba(255, 255, 255, 0.12),
+      transparent 30%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.12)
+    );
+    transform: rotate(0deg);
+    animation: spin-shine 12s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes spin-shine {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   /* Per-game theming */
   .matching-gradient {
     @apply bg-gradient-to-br from-cyan-500 to-sky-500;

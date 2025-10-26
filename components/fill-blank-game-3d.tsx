@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Tilt3D from "./ui/tilt";
 
 interface FillBlankGameProps {
   onComplete: (score: number) => void;
@@ -79,91 +80,95 @@ export default function FillBlankGame3D({ onComplete }: FillBlankGameProps) {
   };
 
   return (
-    <div className="fillblank-gradient rounded-2xl p-7 max-w-3xl shadow-2xl border border-white/30 text-white">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
-          ✏️ Điền Số Còn Thiếu
-        </h2>
-        <p className="text-white/90 text-sm drop-shadow-md mb-4">
-          Tìm số còn thiếu trong dãy
-        </p>
-        <div className="flex justify-center gap-2">
-          {questions.map((_, i) => (
+    <Tilt3D className="shine-3d">
+      <div className="fillblank-gradient rounded-2xl p-7 max-w-3xl shadow-2xl border border-white/30 text-white glow-3d relative overflow-hidden">
+        <div className="orb bg-emerald-300 size-48 -top-10 -left-8" />
+        <div className="orb bg-teal-300 size-40 -bottom-10 -right-8" />
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
+            ✏️ Điền Số Còn Thiếu
+          </h2>
+          <p className="text-white/90 text-sm drop-shadow-md mb-4">
+            Tìm số còn thiếu trong dãy
+          </p>
+          <div className="flex justify-center gap-2">
+            {questions.map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 w-6 rounded-full transition-all ${
+                  i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Sequence */}
+        <div className="flex justify-center items-center gap-3 mb-8 flex-wrap">
+          {question.sequence.map((num, i) => (
             <div
               key={i}
-              className={`h-2 w-6 rounded-full transition-all ${
-                i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
+              className={`w-16 h-16 rounded-xl flex items-center justify-center font-bold text-2xl border ${
+                num === "?"
+                  ? "bg-yellow-200 text-yellow-800 border-yellow-300"
+                  : "bg-white/10 text-white border-white/30"
               }`}
-            />
+            >
+              {num}
+            </div>
           ))}
         </div>
-      </div>
 
-      {/* Sequence */}
-      <div className="flex justify-center items-center gap-3 mb-8 flex-wrap">
-        {question.sequence.map((num, i) => (
+        {/* Hint */}
+        <div className="glass-card fillblank-glass p-4 mb-5 text-center">
+          <p className="text-white font-semibold text-sm">
+            💡 Gợi ý: {question.hint}
+          </p>
+        </div>
+
+        {/* Input */}
+        <div className="mb-5">
+          <input
+            type="number"
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+            placeholder="Nhập số"
+            className="w-full px-5 py-4 text-2xl font-bold text-center bg-white/10 text-white placeholder-white/70 border border-white/30 rounded-xl focus:outline-none focus:border-white/60"
+          />
+        </div>
+
+        {/* Submit Button */}
+        <button
+          onClick={handleSubmit}
+          disabled={!userAnswer}
+          className="w-full btn-brand disabled:opacity-50 py-3 text-sm mb-4"
+        >
+          Kiểm Tra ✓
+        </button>
+
+        {/* Feedback */}
+        {feedback && (
           <div
-            key={i}
-            className={`w-16 h-16 rounded-xl flex items-center justify-center font-bold text-2xl border ${
-              num === "?"
-                ? "bg-yellow-200 text-yellow-800 border-yellow-300"
-                : "bg-white/10 text-white border-white/30"
+            className={`text-center py-3 rounded-lg font-bold text-sm mb-4 border ${
+              feedback === "correct"
+                ? "bg-emerald-500 text-white border-white/30"
+                : "bg-rose-500 text-white border-white/30"
             }`}
           >
-            {num}
+            {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
           </div>
-        ))}
-      </div>
+        )}
 
-      {/* Hint */}
-      <div className="glass-card fillblank-glass p-4 mb-5 text-center">
-        <p className="text-white font-semibold text-sm">
-          💡 Gợi ý: {question.hint}
-        </p>
-      </div>
-
-      {/* Input */}
-      <div className="mb-5">
-        <input
-          type="number"
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder="Nhập số"
-          className="w-full px-5 py-4 text-2xl font-bold text-center bg-white/10 text-white placeholder-white/70 border border-white/30 rounded-xl focus:outline-none focus:border-white/60"
-        />
-      </div>
-
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!userAnswer}
-        className="w-full btn-brand disabled:opacity-50 py-3 text-sm mb-4"
-      >
-        Kiểm Tra ✓
-      </button>
-
-      {/* Feedback */}
-      {feedback && (
-        <div
-          className={`text-center py-3 rounded-lg font-bold text-sm mb-4 border ${
-            feedback === "correct"
-              ? "bg-emerald-500 text-white border-white/30"
-              : "bg-rose-500 text-white border-white/30"
-          }`}
+        {/* Back Button */}
+        <button
+          onClick={() => onComplete(0)}
+          className="w-full btn-glass py-3 text-sm"
         >
-          {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
-        </div>
-      )}
-
-      {/* Back Button */}
-      <button
-        onClick={() => onComplete(0)}
-        className="w-full btn-glass py-3 text-sm"
-      >
-        ← Quay Lại
-      </button>
-    </div>
+          ← Quay Lại
+        </button>
+      </div>
+    </Tilt3D>
   );
 }

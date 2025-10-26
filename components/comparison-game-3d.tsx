@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Tilt3D from "./ui/tilt";
 
 interface ComparisonGameProps {
   onComplete: (score: number) => void;
@@ -131,74 +132,78 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
   };
 
   return (
-    <div className="comparison-gradient rounded-2xl p-7 max-w-3xl shadow-2xl border border-white/30 text-white">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
-          ⚖️ So Sánh Số
-        </h2>
-        <p className="text-white/90 text-sm drop-shadow-md mb-4">
-          Chọn đáp án đúng
-        </p>
-        <div className="flex justify-center gap-2">
-          {questions.map((_, i) => (
-            <div
+    <Tilt3D className="shine-3d">
+      <div className="comparison-gradient rounded-2xl p-7 max-w-3xl shadow-2xl border border-white/30 text-white glow-3d relative overflow-hidden">
+        <div className="orb bg-indigo-300 size-48 -top-10 -left-8" />
+        <div className="orb bg-violet-300 size-40 -bottom-10 -right-8" />
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
+            ⚖️ So Sánh Số
+          </h2>
+          <p className="text-white/90 text-sm drop-shadow-md mb-4">
+            Chọn đáp án đúng
+          </p>
+          <div className="flex justify-center gap-2">
+            {questions.map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 w-6 rounded-full transition-all ${
+                  i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Question */}
+        <div className="glass-card comparison-glass rounded-xl p-7 mb-8">
+          <p className="text-4xl font-bold text-white text-center drop-shadow-lg">
+            {question.question}
+          </p>
+        </div>
+
+        {/* Options */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {question.options.map((option, i) => (
+            <button
               key={i}
-              className={`h-2 w-6 rounded-full transition-all ${
-                i === currentQuestion ? "bg-white w-10" : "bg-white/50 w-2"
+              onClick={() => handleAnswer(i)}
+              disabled={selectedAnswer !== null}
+              className={`py-5 px-4 rounded-xl font-bold text-2xl transition-all border shadow-lg comparison-glass ${
+                selectedAnswer === i
+                  ? feedback === "correct"
+                    ? "bg-emerald-500 text-white"
+                    : "bg-rose-500 text-white"
+                  : "text-white hover:bg-white/20 hover:shadow-xl"
               }`}
-            />
+            >
+              {option}
+            </button>
           ))}
         </div>
-      </div>
 
-      {/* Question */}
-      <div className="glass-card comparison-glass rounded-xl p-7 mb-8">
-        <p className="text-4xl font-bold text-white text-center drop-shadow-lg">
-          {question.question}
-        </p>
-      </div>
-
-      {/* Options */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {question.options.map((option, i) => (
-          <button
-            key={i}
-            onClick={() => handleAnswer(i)}
-            disabled={selectedAnswer !== null}
-            className={`py-5 px-4 rounded-xl font-bold text-2xl transition-all border shadow-lg comparison-glass ${
-              selectedAnswer === i
-                ? feedback === "correct"
-                  ? "bg-emerald-500 text-white"
-                  : "bg-rose-500 text-white"
-                : "text-white hover:bg-white/20 hover:shadow-xl"
+        {/* Feedback */}
+        {feedback && (
+          <div
+            className={`text-center py-3 rounded-lg font-bold text-sm mb-5 border ${
+              feedback === "correct"
+                ? "bg-emerald-500 text-white border-white/30"
+                : "bg-rose-500 text-white border-white/30"
             }`}
           >
-            {option}
-          </button>
-        ))}
-      </div>
+            {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
+          </div>
+        )}
 
-      {/* Feedback */}
-      {feedback && (
-        <div
-          className={`text-center py-3 rounded-lg font-bold text-sm mb-5 border ${
-            feedback === "correct"
-              ? "bg-emerald-500 text-white border-white/30"
-              : "bg-rose-500 text-white border-white/30"
-          }`}
+        {/* Back Button */}
+        <button
+          onClick={() => onComplete(0)}
+          className="w-full btn-glass py-3 text-sm"
         >
-          {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
-        </div>
-      )}
-
-      {/* Back Button */}
-      <button
-        onClick={() => onComplete(0)}
-        className="w-full btn-glass py-3 text-sm"
-      >
-        ← Quay Lại
-      </button>
-    </div>
+          ← Quay Lại
+        </button>
+      </div>
+    </Tilt3D>
   );
 }

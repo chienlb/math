@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Tilt3D from "./ui/tilt";
 
 interface TrueFalseGameProps {
   onComplete: (score: number) => void;
@@ -97,106 +98,110 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
   };
 
   return (
-    <div className="truefalse-gradient rounded-2xl p-7 max-w-3xl shadow-2xl border border-white/30 text-white">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
-          ✓✗ Đúng Hay Sai?
-        </h2>
-        <p className="text-white/90 text-sm drop-shadow-md mb-4">
-          Chọn Đúng hoặc Sai
-        </p>
-
-        {/* Progress Indicator */}
-        <div className="flex justify-center gap-2">
-          {questions.map((_, i) => (
-            <div
-              key={i}
-              className={`h-2 w-6 rounded-full transition-all ${
-                i === currentQuestion
-                  ? "bg-white w-10"
-                  : i < currentQuestion
-                  ? "bg-green-300 w-2"
-                  : "bg-white/50 w-2"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Question Area */}
-      <div className="glass-card truefalse-glass rounded-xl p-7 mb-8">
-        <div className="text-center">
-          <p className="text-white text-sm font-bold mb-4 drop-shadow-md">
-            Câu {currentQuestion + 1} / {questions.length}
+    <Tilt3D className="shine-3d">
+      <div className="truefalse-gradient rounded-2xl p-7 max-w-3xl shadow-2xl border border-white/30 text-white glow-3d relative overflow-hidden">
+        <div className="orb bg-fuchsia-300 size-48 -top-12 -left-10" />
+        <div className="orb bg-pink-300 size-36 -bottom-10 -right-8" />
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
+            ✓✗ Đúng Hay Sai?
+          </h2>
+          <p className="text-white/90 text-sm drop-shadow-md mb-4">
+            Chọn Đúng hoặc Sai
           </p>
-          <div className="bg-white/10 backdrop-blur-md rounded-lg p-5 border border-white/30 mb-6">
-            <p className="text-4xl font-bold text-white drop-shadow-lg">
-              {question.question}
+
+          {/* Progress Indicator */}
+          <div className="flex justify-center gap-2">
+            {questions.map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 w-6 rounded-full transition-all ${
+                  i === currentQuestion
+                    ? "bg-white w-10"
+                    : i < currentQuestion
+                    ? "bg-green-300 w-2"
+                    : "bg-white/50 w-2"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Question Area */}
+        <div className="glass-card truefalse-glass rounded-xl p-7 mb-8">
+          <div className="text-center">
+            <p className="text-white text-sm font-bold mb-4 drop-shadow-md">
+              Câu {currentQuestion + 1} / {questions.length}
+            </p>
+            <div className="bg-white/10 backdrop-blur-md rounded-lg p-5 border border-white/30 mb-6">
+              <p className="text-4xl font-bold text-white drop-shadow-lg">
+                {question.question}
+              </p>
+            </div>
+
+            {/* Answer Buttons */}
+            <div className="grid grid-cols-2 gap-5">
+              <button
+                onClick={() => handleAnswer(true)}
+                disabled={selectedAnswer !== null}
+                className={`py-5 px-6 rounded-xl font-bold text-2xl transition-all border shadow-lg truefalse-glass ${
+                  selectedAnswer === true
+                    ? feedback === "correct"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-rose-500 text-white"
+                    : "text-white hover:bg-white/20 hover:shadow-xl"
+                }`}
+              >
+                ✓ Đúng
+              </button>
+              <button
+                onClick={() => handleAnswer(false)}
+                disabled={selectedAnswer !== null}
+                className={`py-5 px-6 rounded-xl font-bold text-2xl transition-all border shadow-lg truefalse-glass ${
+                  selectedAnswer === false
+                    ? feedback === "correct"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-rose-500 text-white"
+                    : "text-white hover:bg-white/20 hover:shadow-xl"
+                }`}
+              >
+                ✗ Sai
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Feedback */}
+        {feedback && (
+          <div
+            className={`text-center py-3 rounded-lg font-bold text-sm mb-4 border ${
+              feedback === "correct"
+                ? "bg-emerald-500 text-white border-white/30"
+                : "bg-rose-500 text-white border-white/30"
+            }`}
+          >
+            {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
+          </div>
+        )}
+
+        {/* Explanation */}
+        {selectedAnswer !== null && (
+          <div className="glass-card rounded-lg p-4 mb-5">
+            <p className="text-white font-semibold text-sm text-center drop-shadow-md">
+              {question.explanation}
             </p>
           </div>
+        )}
 
-          {/* Answer Buttons */}
-          <div className="grid grid-cols-2 gap-5">
-            <button
-              onClick={() => handleAnswer(true)}
-              disabled={selectedAnswer !== null}
-              className={`py-5 px-6 rounded-xl font-bold text-2xl transition-all border shadow-lg truefalse-glass ${
-                selectedAnswer === true
-                  ? feedback === "correct"
-                    ? "bg-emerald-500 text-white"
-                    : "bg-rose-500 text-white"
-                  : "text-white hover:bg-white/20 hover:shadow-xl"
-              }`}
-            >
-              ✓ Đúng
-            </button>
-            <button
-              onClick={() => handleAnswer(false)}
-              disabled={selectedAnswer !== null}
-              className={`py-5 px-6 rounded-xl font-bold text-2xl transition-all border shadow-lg truefalse-glass ${
-                selectedAnswer === false
-                  ? feedback === "correct"
-                    ? "bg-emerald-500 text-white"
-                    : "bg-rose-500 text-white"
-                  : "text-white hover:bg-white/20 hover:shadow-xl"
-              }`}
-            >
-              ✗ Sai
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Feedback */}
-      {feedback && (
-        <div
-          className={`text-center py-3 rounded-lg font-bold text-sm mb-4 border ${
-            feedback === "correct"
-              ? "bg-emerald-500 text-white border-white/30"
-              : "bg-rose-500 text-white border-white/30"
-          }`}
+        {/* Back Button */}
+        <button
+          onClick={() => onComplete(0)}
+          className="w-full btn-glass py-3 text-sm"
         >
-          {feedback === "correct" ? "✅ Chính xác!" : "❌ Thử lại!"}
-        </div>
-      )}
-
-      {/* Explanation */}
-      {selectedAnswer !== null && (
-        <div className="glass-card rounded-lg p-4 mb-5">
-          <p className="text-white font-semibold text-sm text-center drop-shadow-md">
-            {question.explanation}
-          </p>
-        </div>
-      )}
-
-      {/* Back Button */}
-      <button
-        onClick={() => onComplete(0)}
-        className="w-full btn-glass py-3 text-sm"
-      >
-        ← Quay Lại
-      </button>
-    </div>
+          ← Quay Lại
+        </button>
+      </div>
+    </Tilt3D>
   );
 }
