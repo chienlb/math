@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Tilt3D from "./ui/tilt";
 import ProgressDots from "./ui/progress-dots";
 
@@ -14,6 +14,22 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
   );
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
+
+  // Sound effects
+  const correctSfx = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? new Audio("/mixkit-correct-answer-notification-947.wav")
+        : null,
+    []
+  );
+  const wrongSfx = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? new Audio("/mixkit-wrong-answer-fail-notification-946.wav")
+        : null,
+    []
+  );
 
   const questions = [
     {
@@ -73,6 +89,12 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
 
     if (isCorrect) {
       setFeedback("correct");
+      if (correctSfx) {
+        try {
+          correctSfx.currentTime = 0;
+          correctSfx.play();
+        } catch {}
+      }
       setTimeout(() => {
         if (questionsAnswered + 1 >= questions.length) {
           onComplete(10);
@@ -85,6 +107,12 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
       }, 1500);
     } else {
       setFeedback("incorrect");
+      if (wrongSfx) {
+        try {
+          wrongSfx.currentTime = 0;
+          wrongSfx.play();
+        } catch {}
+      }
       setTimeout(() => {
         if (questionsAnswered + 1 >= questions.length) {
           onComplete(5);

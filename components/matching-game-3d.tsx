@@ -24,11 +24,44 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const leftItemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const rightItemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const [puzzleVisible, setPuzzleVisible] = useState(false);
+  const [revealedLetters, setRevealedLetters] = useState(0);
+  const [guessInput, setGuessInput] = useState("");
+  const [isWordSolved, setIsWordSolved] = useState(false);
+  const PUZZLE_TIME = 20; // seconds
+  const [timeLeft, setTimeLeft] = useState(PUZZLE_TIME);
+  const [guessingEnabled, setGuessingEnabled] = useState(true);
+  const [awaitingPuzzle, setAwaitingPuzzle] = useState(false);
+  const [postRevealSeconds, setPostRevealSeconds] = useState<number | null>(
+    null
+  );
+  const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
+
+  // Sound effects
+  const correctSfx = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? new Audio("/mixkit-correct-answer-notification-947.wav")
+        : null,
+    []
+  );
+  const wrongSfx = useMemo(
+    () =>
+      typeof window !== "undefined"
+        ? new Audio("/mixkit-wrong-answer-fail-notification-946.wav")
+        : null,
+    []
+  );
+  useEffect(() => {
+    if (correctSfx) correctSfx.volume = 0.6;
+    if (wrongSfx) wrongSfx.volume = 0.6;
+  }, [correctSfx, wrongSfx]);
 
   const questions = [
     {
       title: "Nối số ban đầu với số sau khi giảm",
       description: "Ví dụ: 10 giảm 5 = 5",
+      word: "GIAM",
       pairs: [
         { original: 10, reduced: 5, operation: "Giảm 5" },
         { original: 20, reduced: 10, operation: "Giảm 10" },
@@ -38,6 +71,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Nối số ban đầu với số sau khi giảm",
       description: "Ví dụ: 8 giảm 4 = 4",
+      word: "GIAM",
       pairs: [
         { original: 8, reduced: 4, operation: "Giảm 4" },
         { original: 12, reduced: 6, operation: "Giảm 6" },
@@ -47,6 +81,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Gấp số lên để được kết quả",
       description: "Kéo nối số gốc với kết quả sau khi nhân",
+      word: "NHAN",
       pairs: [
         { original: 5, reduced: 10, operation: "Nhân 2 lần" },
         { original: 6, reduced: 30, operation: "Nhân 5 lần" },
@@ -56,6 +91,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Gấp số lên để được kết quả",
       description: "Ví dụ: 7 × 2 = 14",
+      word: "NHAN",
       pairs: [
         { original: 7, reduced: 14, operation: "Nhân 2 lần" },
         { original: 4, reduced: 20, operation: "Nhân 5 lần" },
@@ -93,6 +129,67 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  // Countdown effect: only starts after all connections are done (awaitingPuzzle)
+  useEffect(() => {
+    if (!awaitingPuzzle || isWordSolved) return;
+    if (!guessingEnabled) return;
+    if (timeLeft <= 0) {
+      setGuessingEnabled(false);
+      // Reveal the crossword automatically when time is up
+      setIsWordSolved(true);
+      setRevealedLetters(question.word.length);
+      // Give 10s for user to view keyword before auto-advancing
+      setPostRevealSeconds(10);
+      return;
+    }
+    const t = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    return () => clearTimeout(t);
+  }, [
+    awaitingPuzzle,
+    isWordSolved,
+    guessingEnabled,
+    timeLeft,
+    questionsAnswered,
+    questions.length,
+    currentQuestion,
+  ]);
+
+  // Post-reveal grace period countdown
+  useEffect(() => {
+    if (postRevealSeconds === null) return;
+    if (postRevealSeconds <= 0) {
+      // advance to next question
+      if (questionsAnswered + 1 >= questions.length) {
+        onComplete(10);
+      } else {
+        setCurrentQuestion(currentQuestion + 1);
+        setConnections([]);
+        setFeedback(null);
+        setQuestionsAnswered(questionsAnswered + 1);
+        setPuzzleVisible(false);
+        setRevealedLetters(0);
+        setGuessInput("");
+        setIsWordSolved(false);
+        setGuessingEnabled(true);
+        setTimeLeft(PUZZLE_TIME);
+        setAwaitingPuzzle(false);
+        setSelectedKeyword(null);
+      }
+      setPostRevealSeconds(null);
+      return;
+    }
+    const t = setTimeout(() => {
+      setPostRevealSeconds((s) => (s === null ? null : s - 1));
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [
+    postRevealSeconds,
+    questionsAnswered,
+    questions.length,
+    currentQuestion,
+    onComplete,
+  ]);
+
   useEffect(() => {
     const handleMouseUp = (e: MouseEvent) => {
       if (dragging !== null) {
@@ -125,8 +222,88 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       ];
       setConnections(newConnections);
       setFeedback("correct");
+      // play correct sound
+      if (correctSfx) {
+        try {
+          correctSfx.currentTime = 0;
+          correctSfx.play();
+        } catch {}
+      }
+
+      // Reveal crossword after first correct, and reveal more letters as we connect
+      if (!puzzleVisible) {
+        setPuzzleVisible(true);
+      }
+      const newRevealCount = Math.min(
+        newConnections.length,
+        question.word.length
+      );
+      setRevealedLetters(newRevealCount);
+      // Do not start timer yet; timer begins only when all connections are correct
 
       if (newConnections.length === question.pairs.length) {
+        if (puzzleVisible && !isWordSolved) {
+          // Wait for the player to guess the word or timer to end
+          setAwaitingPuzzle(true);
+          setGuessingEnabled(true);
+          setTimeLeft(PUZZLE_TIME);
+        } else {
+          setTimeout(() => {
+            if (questionsAnswered + 1 >= questions.length) {
+              onComplete(10);
+            } else {
+              setCurrentQuestion(currentQuestion + 1);
+              setConnections([]);
+              setFeedback(null);
+              setQuestionsAnswered(questionsAnswered + 1);
+              setPuzzleVisible(false);
+              setRevealedLetters(0);
+              setGuessInput("");
+              setIsWordSolved(false);
+              setGuessingEnabled(true);
+              setTimeLeft(PUZZLE_TIME);
+              setAwaitingPuzzle(false);
+            }
+          }, 1500);
+        }
+      } else {
+        setTimeout(() => setFeedback(null), 800);
+      }
+    } else {
+      setFeedback("incorrect");
+      // play wrong sound
+      if (wrongSfx) {
+        try {
+          wrongSfx.currentTime = 0;
+          wrongSfx.play();
+        } catch {}
+      }
+      setTimeout(() => setFeedback(null), 1000);
+    }
+  };
+
+  const normalize = (s: string) =>
+    s.toString().trim().toUpperCase().replace(/\s+/g, "");
+
+  const handleGuess = () => {
+    if (!puzzleVisible) return;
+    if (!guessingEnabled) return;
+    const target = normalize(question.word);
+    const guess = normalize(guessInput);
+    if (!guess) return;
+    if (guess === target) {
+      setIsWordSolved(true);
+      setFeedback("correct");
+      setRevealedLetters(question.word.length);
+      if (correctSfx) {
+        try {
+          correctSfx.currentTime = 0;
+          correctSfx.play();
+        } catch {}
+      }
+      setTimeout(() => setFeedback(null), 1000);
+      if (awaitingPuzzle || connections.length === question.pairs.length) {
+        // After correct guess and all connections done, proceed
         setTimeout(() => {
           if (questionsAnswered + 1 >= questions.length) {
             onComplete(10);
@@ -135,14 +312,27 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
             setConnections([]);
             setFeedback(null);
             setQuestionsAnswered(questionsAnswered + 1);
+            setPuzzleVisible(false);
+            setRevealedLetters(0);
+            setGuessInput("");
+            setIsWordSolved(false);
+            setGuessingEnabled(true);
+            setTimeLeft(PUZZLE_TIME);
+            setAwaitingPuzzle(false);
           }
-        }, 1500);
-      } else {
-        setTimeout(() => setFeedback(null), 800);
+        }, 900);
       }
+      // If they solved early and all questions done or all connections already made, allow normal flow.
+      // We still keep the matching task; progression remains tied to completing connections.
     } else {
       setFeedback("incorrect");
-      setTimeout(() => setFeedback(null), 1000);
+      if (wrongSfx) {
+        try {
+          wrongSfx.currentTime = 0;
+          wrongSfx.play();
+        } catch {}
+      }
+      setTimeout(() => setFeedback(null), 900);
     }
   };
 
@@ -203,26 +393,17 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
         {/* Matching Area */}
         <div
           ref={containerRef}
-          className="relative glass-card rounded-xl p-5 mb-6 matching-glass"
+          className={`relative glass-card rounded-xl mb-6 matching-glass transition-all duration-300 ease-out ${
+            connections.length === question.pairs.length
+              ? "opacity-0 scale-95 max-h-0 p-0 overflow-hidden pointer-events-none"
+              : "p-5"
+          }`}
         >
           {/* SVG for connection lines */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
             style={{ overflow: "visible" }}
           >
-            {/* Completed connections */}
-            {connections.map((conn, idx) => (
-              <path
-                key={`connection-${idx}`}
-                d={getConnectionPath(conn.from, conn.to)}
-                stroke="#10b981"
-                strokeWidth="3"
-                fill="none"
-                strokeLinecap="round"
-                filter="drop-shadow(0 0 3px rgba(16, 185, 129, 0.8))"
-              />
-            ))}
-
             {/* Drag preview line */}
             {dragging !== null && (
               <path
@@ -251,8 +432,10 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
                       leftItemsRef.current[i] = el;
                     }}
                     onMouseDown={() => setDragging(i)}
-                    className={`bg-white/10 border border-white/30 rounded-xl p-4 text-white font-bold text-2xl text-center cursor-grab active:cursor-grabbing shadow-lg hover:bg-white/20 hover:shadow-xl transition-all ${
-                      isConnected ? "ring-4 ring-emerald-300" : ""
+                    className={`rounded-xl text-center shadow-lg transition-all duration-300 ease-out ${
+                      isConnected
+                        ? "opacity-0 scale-90 max-h-0 p-0 m-0 border-0 overflow-hidden pointer-events-none"
+                        : "bg-white/10 border border-white/30 p-4 text-white font-bold text-2xl cursor-grab active:cursor-grabbing hover:bg-white/20 hover:shadow-xl"
                     }`}
                   >
                     {pair.original}
@@ -263,14 +446,21 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
 
             {/* Middle Column */}
             <div className="flex flex-col justify-center items-center space-y-3">
-              {question.pairs.map((pair, i) => (
-                <div
-                  key={`label-${i}`}
-                  className="text-sm font-bold text-white text-center bg-white/10 px-3 py-1.5 rounded-lg shadow-md border border-white/30"
-                >
-                  {pair.operation}
-                </div>
-              ))}
+              {question.pairs.map((pair, i) => {
+                const isConnected = connections.some((c) => c.from === i);
+                return (
+                  <div
+                    key={`label-${i}`}
+                    className={`text-sm font-bold text-white text-center bg-white/10 px-3 py-1.5 rounded-lg shadow-md border border-white/30 transition-all duration-300 ease-out ${
+                      isConnected
+                        ? "opacity-0 scale-90 max-h-0 p-0 m-0 border-0 overflow-hidden"
+                        : ""
+                    }`}
+                  >
+                    {pair.operation}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Right Column */}
@@ -287,8 +477,10 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
                       if (el) rightItemsRef.current[pairIndex] = el;
                     }}
                     data-right-index={pairIndex}
-                    className={`bg-white/10 border border-white/30 rounded-xl p-4 text-white font-bold text-2xl text-center cursor-pointer shadow-lg hover:bg-white/20 hover:shadow-xl transition-all ${
-                      isConnected ? "ring-4 ring-emerald-300" : ""
+                    className={`rounded-xl text-center shadow-lg transition-all duration-300 ease-out ${
+                      isConnected
+                        ? "opacity-0 scale-90 max-h-0 p-0 m-0 border-0 overflow-hidden pointer-events-none"
+                        : "bg-white/10 border border-white/30 p-4 text-white font-bold text-2xl cursor-pointer hover:bg-white/20 hover:shadow-xl"
                     }`}
                   >
                     {question.pairs[pairIndex].reduced}
@@ -298,6 +490,108 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
             </div>
           </div>
         </div>
+
+        {/* Crossword Puzzle */}
+        {puzzleVisible && (
+          <div className="glass-card rounded-xl p-4 mb-4 border border-white/30">
+            <div className="mb-3 text-center">
+              <p className="text-xs font-bold text-white/80">Ô chữ chủ đề</p>
+              <p className="text-lg font-extrabold tracking-wider text-white drop-shadow">
+                NỐI SỐ
+              </p>
+            </div>
+
+            {/* Timer */}
+            {awaitingPuzzle && (
+              <div className="flex items-center justify-center mb-3">
+                <div
+                  className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                    timeLeft <= 5
+                      ? "bg-rose-500 border-white/30"
+                      : "bg-emerald-500 border-white/30"
+                  }`}
+                >
+                  ⏳ {timeLeft}s
+                </div>
+              </div>
+            )}
+
+            {/* Letters Row */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              {question.word.split("").map((ch, idx) => (
+                <div
+                  key={`ltr-${idx}`}
+                  className={`w-10 h-12 flex items-center justify-center rounded-lg border text-xl font-black tracking-widest shadow-md ${
+                    idx < revealedLetters || isWordSolved
+                      ? "bg-white text-slate-800 border-white/60"
+                      : "bg-white/10 text-white/70 border-white/30"
+                  }`}
+                >
+                  {idx < revealedLetters || isWordSolved ? ch : ""}
+                </div>
+              ))}
+            </div>
+
+            {/* Guess Input */}
+            <div className="flex items-center gap-2 justify-center">
+              <input
+                value={guessInput}
+                onChange={(e) => setGuessInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleGuess();
+                }}
+                placeholder="Đoán ô chữ..."
+                disabled={!guessingEnabled}
+                className={`px-3 py-2 rounded-lg font-semibold placeholder-slate-500 w-48 focus:outline-none focus:ring-2 focus:ring-cyan-300 ${
+                  guessingEnabled
+                    ? "bg-white/90 text-slate-800"
+                    : "bg-white/40 text-slate-500"
+                }`}
+              />
+              <button
+                onClick={handleGuess}
+                disabled={!guessingEnabled}
+                className={`px-4 py-2 rounded-lg btn-glass text-sm font-bold ${
+                  guessingEnabled ? "" : "opacity-60 cursor-not-allowed"
+                }`}
+              >
+                Đoán
+              </button>
+            </div>
+
+            {/* Post-reveal view and keyword selection */}
+            {awaitingPuzzle && postRevealSeconds !== null && (
+              <div className="mt-4 text-center">
+                <div className="mb-2 text-white text-sm">
+                  Hết thời gian! Từ khóa: {question.word}
+                </div>
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <button
+                    onClick={() => setSelectedKeyword(question.word)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold border ${
+                      selectedKeyword
+                        ? "bg-cyan-500 text-white border-white/30"
+                        : "bg-white/10 text-white border-white/30 hover:bg-white/20"
+                    }`}
+                  >
+                    Chọn từ khóa: {question.word}
+                  </button>
+                </div>
+                <div className="flex items-center justify-center gap-3">
+                  <div className="text-xs text-white/90">
+                    Tự động tiếp tục sau {postRevealSeconds}s
+                  </div>
+                  <button
+                    onClick={() => setPostRevealSeconds(0)}
+                    className="px-3 py-1.5 rounded-lg btn-glass text-xs font-bold"
+                  >
+                    Tiếp tục
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Feedback */}
         {feedback && (
