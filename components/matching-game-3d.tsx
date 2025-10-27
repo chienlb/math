@@ -59,43 +59,54 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
 
   const questions = [
     {
-      title: "Nối số ban đầu với số sau khi giảm",
-      description: "Ví dụ: 10 giảm 5 = 5",
+      title: "Giảm số đi một số lần",
+      description: "Ví dụ: 10 ÷ 5 = 2",
       word: "GIAM",
       pairs: [
-        { original: 10, reduced: 5, operation: "Giảm 5" },
-        { original: 20, reduced: 10, operation: "Giảm 10" },
-        { original: 15, reduced: 12, operation: "Giảm 3" },
+        { original: 10, reduced: 2, operation: "giảm 5 lần" },
+        { original: 8, reduced: 2, operation: "giảm 4 lần" },
+        { original: 12, reduced: 6, operation: "giảm 2 lần" },
       ],
     },
     {
-      title: "Nối số ban đầu với số sau khi giảm",
-      description: "Ví dụ: 8 giảm 4 = 4",
+      title: "Giảm số đi một số lần",
+      description: "Ví dụ: 16 ÷ 4 = 4",
       word: "GIAM",
       pairs: [
-        { original: 8, reduced: 4, operation: "Giảm 4" },
-        { original: 12, reduced: 6, operation: "Giảm 6" },
-        { original: 18, reduced: 15, operation: "Giảm 3" },
+        { original: 16, reduced: 4, operation: "÷ 4" },
+        { original: 20, reduced: 4, operation: "÷ 5" },
+        { original: 18, reduced: 9, operation: "÷ 2" },
       ],
     },
     {
-      title: "Gấp số lên để được kết quả",
-      description: "Kéo nối số gốc với kết quả sau khi nhân",
-      word: "NHAN",
+      title: "Giảm số đi một số lần",
+      description: "Ví dụ: 15 ÷ 3 = 5",
+      word: "GIAM",
       pairs: [
-        { original: 5, reduced: 10, operation: "Nhân 2 lần" },
-        { original: 6, reduced: 30, operation: "Nhân 5 lần" },
-        { original: 3, reduced: 24, operation: "Nhân 8 lần" },
+        { original: 15, reduced: 5, operation: "÷ 3" },
+        { original: 12, reduced: 4, operation: "÷ 3" },
+        { original: 9, reduced: 3, operation: "÷ 3" },
       ],
     },
     {
-      title: "Gấp số lên để được kết quả",
-      description: "Ví dụ: 7 × 2 = 14",
-      word: "NHAN",
+      title: "Giảm số đi một số lần",
+      description: "Ví dụ: 14 ÷ 7 = 2",
+      word: "GIAM",
       pairs: [
-        { original: 7, reduced: 14, operation: "Nhân 2 lần" },
-        { original: 4, reduced: 20, operation: "Nhân 5 lần" },
-        { original: 8, reduced: 16, operation: "Nhân 2 lần" },
+        { original: 14, reduced: 2, operation: "÷ 7" },
+        { original: 24, reduced: 6, operation: "÷ 4" },
+        { original: 21, reduced: 3, operation: "÷ 7" },
+      ],
+    },
+    {
+      title: "Giảm số đi một số lần",
+      description: "Ví dụ: 24 ÷ 8 = 3",
+      word: "GIAM",
+      pairs: [
+        { original: 24, reduced: 3, operation: "÷ 8" },
+        { original: 20, reduced: 5, operation: "÷ 4" },
+        { original: 18, reduced: 6, operation: "÷ 3" },
+        { original: 16, reduced: 8, operation: "÷ 2" },
       ],
     },
   ];
@@ -417,11 +428,11 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
             )}
           </svg>
 
-          <div className="grid grid-cols-3 gap-4 relative z-10">
+          <div className="grid grid-cols-2 gap-24 relative z-10">
             {/* Left Column */}
             <div className="space-y-3">
               <h3 className="font-bold text-center mb-3 text-sm text-white drop-shadow-md">
-                📍 Số Ban Đầu
+                📍 Phép Tính
               </h3>
               {question.pairs.map((pair, i) => {
                 const isConnected = connections.some((c) => c.from === i);
@@ -432,32 +443,13 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
                       leftItemsRef.current[i] = el;
                     }}
                     onMouseDown={() => setDragging(i)}
-                    className={`rounded-xl text-center shadow-lg transition-all duration-300 ease-out ${
+                    className={`rounded-xl text-center shadow-lg transition-all duration-300 ease-out flex items-center justify-center ${
                       isConnected
                         ? "opacity-0 scale-90 max-h-0 p-0 m-0 border-0 overflow-hidden pointer-events-none"
                         : "bg-white/10 border border-white/30 p-4 text-white font-bold text-2xl cursor-grab active:cursor-grabbing hover:bg-white/20 hover:shadow-xl"
                     }`}
                   >
-                    {pair.original}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Middle Column */}
-            <div className="flex flex-col justify-center items-center space-y-3">
-              {question.pairs.map((pair, i) => {
-                const isConnected = connections.some((c) => c.from === i);
-                return (
-                  <div
-                    key={`label-${i}`}
-                    className={`text-sm font-bold text-white text-center bg-white/10 px-3 py-1.5 rounded-lg shadow-md border border-white/30 transition-all duration-300 ease-out ${
-                      isConnected
-                        ? "opacity-0 scale-90 max-h-0 p-0 m-0 border-0 overflow-hidden"
-                        : ""
-                    }`}
-                  >
-                    {pair.operation}
+                    {pair.original} {pair.operation}
                   </div>
                 );
               })}

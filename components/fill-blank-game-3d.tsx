@@ -71,6 +71,26 @@ export default function FillBlankGame3D({ onComplete }: FillBlankGameProps) {
       correct: "14",
       hint: "Nhân 2 lần: 7 × 2",
     },
+    {
+      sequence: [12, ":", 3, "=", "?"],
+      correct: "4",
+      hint: "Giảm 12 đi 3 lần: 12 ÷ 3",
+    },
+    {
+      sequence: [16, ":", 4, "=", "?"],
+      correct: "4",
+      hint: "Giảm 16 đi 4 lần: 16 ÷ 4",
+    },
+    {
+      sequence: [20, ":", 5, "=", "?"],
+      correct: "4",
+      hint: "Giảm 20 đi 5 lần: 20 ÷ 5",
+    },
+    {
+      sequence: [18, ":", 2, "=", "?"],
+      correct: "9",
+      hint: "Giảm 18 đi 2 lần: 18 ÷ 2",
+    },
   ];
 
   const question = questions[currentQuestion];
