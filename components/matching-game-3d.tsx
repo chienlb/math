@@ -73,9 +73,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       description: "Ví dụ: 16 ÷ 4 = 4",
       word: "GIAM",
       pairs: [
-        { original: 16, reduced: 4, operation: "÷ 4" },
-        { original: 20, reduced: 4, operation: "÷ 5" },
-        { original: 18, reduced: 9, operation: "÷ 2" },
+        { original: 16, reduced: 4, operation: "giảm 4 lần" },
+        { original: 20, reduced: 4, operation: "giảm 5 lần" },
+        { original: 18, reduced: 9, operation: "giảm 2 lần" },
       ],
     },
     {
@@ -83,9 +83,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       description: "Ví dụ: 15 ÷ 3 = 5",
       word: "GIAM",
       pairs: [
-        { original: 15, reduced: 5, operation: "÷ 3" },
-        { original: 12, reduced: 4, operation: "÷ 3" },
-        { original: 9, reduced: 3, operation: "÷ 3" },
+        { original: 15, reduced: 5, operation: "giảm 3 lần" },
+        { original: 12, reduced: 4, operation: "giảm 3 lần" },
+        { original: 9, reduced: 3, operation: "giảm 3 lần" },
       ],
     },
     {
@@ -93,9 +93,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       description: "Ví dụ: 14 ÷ 7 = 2",
       word: "GIAM",
       pairs: [
-        { original: 14, reduced: 2, operation: "÷ 7" },
-        { original: 24, reduced: 6, operation: "÷ 4" },
-        { original: 21, reduced: 3, operation: "÷ 7" },
+        { original: 14, reduced: 2, operation: "giảm 7 lần" },
+        { original: 24, reduced: 6, operation: "giảm 4 lần" },
+        { original: 21, reduced: 3, operation: "giảm 7 lần" },
       ],
     },
     {
@@ -103,10 +103,10 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       description: "Ví dụ: 24 ÷ 8 = 3",
       word: "GIAM",
       pairs: [
-        { original: 24, reduced: 3, operation: "÷ 8" },
-        { original: 20, reduced: 5, operation: "÷ 4" },
-        { original: 18, reduced: 6, operation: "÷ 3" },
-        { original: 16, reduced: 8, operation: "÷ 2" },
+        { original: 24, reduced: 3, operation: "giảm 8 lần" },
+        { original: 20, reduced: 5, operation: "giảm 4 lần" },
+        { original: 18, reduced: 6, operation: "giảm 3 lần" },
+        { original: 16, reduced: 8, operation: "giảm 2 lần" },
       ],
     },
   ];
