@@ -61,7 +61,8 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 10 ÷ 5 = 2",
-      word: "GIAM",
+      word: "CHIAHET",
+      wordHint: "Phép tính mà đáp án là số nguyên",
       pairs: [
         { original: 10, reduced: 2, operation: "giảm 5 lần" },
         { original: 8, reduced: 2, operation: "giảm 4 lần" },
@@ -71,7 +72,8 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 16 ÷ 4 = 4",
-      word: "GIAM",
+      word: "BICHIA",
+      wordHint: "Số được lấy để thực hiện phép tính",
       pairs: [
         { original: 16, reduced: 4, operation: "giảm 4 lần" },
         { original: 20, reduced: 4, operation: "giảm 5 lần" },
@@ -81,7 +83,8 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 15 ÷ 3 = 5",
-      word: "GIAM",
+      word: "SOCHIA",
+      wordHint: "Số dùng để thực hiện phép tính",
       pairs: [
         { original: 15, reduced: 5, operation: "giảm 3 lần" },
         { original: 12, reduced: 4, operation: "giảm 3 lần" },
@@ -91,7 +94,8 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 14 ÷ 7 = 2",
-      word: "GIAM",
+      word: "CHIATRON",
+      wordHint: "Phép tính không còn thừa lại",
       pairs: [
         { original: 14, reduced: 2, operation: "giảm 7 lần" },
         { original: 24, reduced: 6, operation: "giảm 4 lần" },
@@ -101,7 +105,8 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 24 ÷ 8 = 3",
-      word: "GIAM",
+      word: "KETQUA",
+      wordHint: "Điều ta nhận được sau khi tính xong",
       pairs: [
         { original: 24, reduced: 3, operation: "giảm 8 lần" },
         { original: 20, reduced: 5, operation: "giảm 4 lần" },
@@ -523,6 +528,25 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
                 </div>
               ))}
             </div>
+
+            {/* Hint */}
+            {awaitingPuzzle && !isWordSolved && (
+              <div className="text-center mb-3">
+                <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg px-3 py-2 mb-2">
+                  <p className="text-yellow-200 text-sm font-bold">
+                    💡 Gợi ý: {question.wordHint}
+                  </p>
+                </div>
+                {timeLeft <= 10 && (
+                  <div className="bg-orange-500/20 border border-orange-400/30 rounded-lg px-3 py-2">
+                    <p className="text-orange-200 text-sm font-bold">
+                      🔥 Gợi ý thêm: Có {question.word.length} chữ cái, bắt đầu
+                      bằng "{question.word[0]}"
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Guess Input */}
             <div className="flex items-center gap-2 justify-center">
