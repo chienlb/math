@@ -14,6 +14,9 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
   );
   const [questionsAnswered, setQuestionsAnswered] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
+  const [requireCorrection, setRequireCorrection] = useState(false);
+  const [correctionInput, setCorrectionInput] = useState("");
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
 
   // Sound effects
   const correctSfx = useMemo(
@@ -33,60 +36,120 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
 
   const questions = [
     {
-      question: "10 + 5 = 15",
+      question:
+        "Một con đường dài 12 km. Người ta làm ngắn lại 3 lần, đường còn 4 km.",
       answer: true,
-      explanation: "Đúng! 10 cộng 5 bằng 15",
+      explanation: "Đúng, 12 ÷ 3 = 4",
     },
     {
-      question: "20 - 8 = 11",
+      question:
+        "Bà có 24 quả trứng, chia đều cho 6 giỏ, mỗi giỏ có 3 quả trứng.",
       answer: false,
-      explanation: "Sai! 20 trừ 8 bằng 12",
+      explanation: "Sai, 24 ÷ 6 = 4 (mỗi giỏ 4 quả)",
+      correctValue: 4,
+      correctionPrompt: "Nhập số quả đúng mỗi giỏ",
     },
     {
-      question: "3 × 4 = 12",
-      answer: true,
-      explanation: "Đúng! 3 nhân 4 bằng 12",
-    },
-    {
-      question: "15 ÷ 3 = 4",
+      question: "Một cây cao 18 m, nếu giảm đi 3 lần, thì còn 9 m.",
       answer: false,
-      explanation: "Sai! 15 chia 3 bằng 5",
+      explanation: "Sai, 18 ÷ 3 = 6 (còn 6 m)",
+      correctValue: 6,
+      correctionPrompt: "Nhập chiều cao đúng (m)",
     },
     {
-      question: "7 + 8 = 15",
+      question:
+        "Một người thợ làm 20 cái bánh, giảm đi 5 lần, thì còn 4 cái bánh.",
       answer: true,
-      explanation: "Đúng! 7 cộng 8 bằng 15",
+      explanation: "Đúng, 20 ÷ 5 = 4",
     },
-    // Added from user's list
-    // Các câu ngữ cảnh thực tế đã phân bổ sang Matching/Comparison
     {
-      question: "Hùng có nhiều bi gấp 3 lần Nam (Nam có 5) nên Hùng có 15 viên",
+      question:
+        "Một cửa hàng có 40 quyển vở, giảm đi 4 lần, thì còn 10 quyển vở.",
       answer: true,
-      explanation: "5 × 3 = 15",
+      explanation: "Đúng, 40 ÷ 4 = 10",
     },
     {
-      question: "Mẹ 35 tuổi, gấp 5 lần tuổi Lan (Lan 7 tuổi)",
-      answer: true,
-      explanation: "7 × 5 = 35",
-    },
-    {
-      question: "Có 6 bông hoa, nếu nhân 4 lần thì được 20 bông",
+      question: "Một thùng sữa có 12 lít, giảm đi 2 lần, thì còn 8 lít.",
       answer: false,
-      explanation: "6 × 4 = 24, không phải 20",
+      explanation: "Sai, 12 ÷ 2 = 6 (còn 6 lít)",
+      correctValue: 6,
+      correctionPrompt: "Nhập số lít đúng",
     },
     {
-      question: "Có 9 quyển vở, gấp 3 lần thành 27 quyển",
+      question: "Một khúc vải dài 30 m, chia đều làm 5 phần, mỗi phần dài 6 m.",
       answer: true,
-      explanation: "9 × 3 = 27",
+      explanation: "Đúng, 30 ÷ 5 = 6",
     },
-  ];
+    {
+      question: "Một lớp có 18 bạn, giảm đi 3 lần, thì còn 9 bạn.",
+      answer: false,
+      explanation: "Sai, 18 ÷ 3 = 6 (còn 6 bạn)",
+      correctValue: 6,
+      correctionPrompt: "Nhập số bạn đúng",
+    },
+    {
+      question:
+        "Một người nông dân gieo bằng tay cần 60 kg giống, gieo bằng máy tiết kiệm 3 lần, thì chỉ cần 20 kg giống.",
+      answer: true,
+      explanation: "Đúng, 60 ÷ 3 = 20",
+    },
+    {
+      question: "Mẹ mua 16 quả cam, chia đều cho 4 người, mỗi người 3 quả.",
+      answer: false,
+      explanation: "Sai, 16 ÷ 4 = 4 (mỗi người 4 quả)",
+      correctValue: 4,
+      correctionPrompt: "Nhập số quả đúng mỗi người",
+    },
+    {
+      question: "Một đoạn dây dài 8 cm, giảm đi 4 lần, thì còn 2 cm.",
+      answer: true,
+      explanation: "Đúng, 8 ÷ 4 = 2",
+    },
+    {
+      question:
+        "Một người thợ đan 15 chiếc rổ mỗi ngày. Nếu năng suất giảm đi 3 lần, thì còn làm được 5 chiếc rổ mỗi ngày.",
+      answer: true,
+      explanation: "Đúng, 15 ÷ 3 = 5",
+    },
+  ] as const;
 
   const question = questions[currentQuestion];
 
   const handleAnswer = (answer: boolean) => {
     setSelectedAnswer(answer);
-    const isCorrect = answer === question.answer;
+    setCorrectionError(null);
 
+    // If the statement is false, user must pick "Sai" AND then input the correct value
+    if (question.answer === false) {
+      if (answer === false) {
+        // Correctly identified false; now require correction input
+        setFeedback("correct");
+        if (correctSfx) {
+          try {
+            correctSfx.currentTime = 0;
+            correctSfx.play();
+          } catch {}
+        }
+        setRequireCorrection(true);
+      } else {
+        // Picked Đúng on a false statement -> incorrect
+        setFeedback("incorrect");
+        if (wrongSfx) {
+          try {
+            wrongSfx.currentTime = 0;
+            wrongSfx.play();
+          } catch {}
+        }
+        setTimeout(() => {
+          setSelectedAnswer(null);
+          setFeedback(null);
+        }, 1000);
+      }
+      return;
+    }
+
+    // If the statement is true, normal behavior
+    const isCorrect = answer === true;
     if (isCorrect) {
       setFeedback("correct");
       if (correctSfx) {
@@ -96,15 +159,17 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
         } catch {}
       }
       setTimeout(() => {
-        if (questionsAnswered + 1 >= questions.length) {
+        if (currentQuestion + 1 >= questions.length) {
           onComplete(10);
         } else {
           setCurrentQuestion(currentQuestion + 1);
           setFeedback(null);
           setSelectedAnswer(null);
           setQuestionsAnswered(questionsAnswered + 1);
+          setRequireCorrection(false);
+          setCorrectionInput("");
         }
-      }, 1500);
+      }, 1200);
     } else {
       setFeedback("incorrect");
       if (wrongSfx) {
@@ -114,15 +179,45 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
         } catch {}
       }
       setTimeout(() => {
-        if (questionsAnswered + 1 >= questions.length) {
-          onComplete(5);
+        setSelectedAnswer(null);
+        setFeedback(null);
+      }, 1000);
+    }
+  };
+
+  const submitCorrection = () => {
+    const q: any = questions[currentQuestion] as any;
+    if (q.correctValue === undefined) return;
+    if (String(q.correctValue) === correctionInput.trim()) {
+      setFeedback("correct");
+      setCorrectionError(null);
+      if (correctSfx) {
+        try {
+          correctSfx.currentTime = 0;
+          correctSfx.play();
+        } catch {}
+      }
+      setTimeout(() => {
+        if (currentQuestion + 1 >= questions.length) {
+          onComplete(10);
         } else {
           setCurrentQuestion(currentQuestion + 1);
           setFeedback(null);
           setSelectedAnswer(null);
           setQuestionsAnswered(questionsAnswered + 1);
+          setRequireCorrection(false);
+          setCorrectionInput("");
         }
-      }, 1500);
+      }, 800);
+    } else {
+      setCorrectionError("Chưa đúng, thử lại nhé!");
+      setFeedback("incorrect");
+      if (wrongSfx) {
+        try {
+          wrongSfx.currentTime = 0;
+          wrongSfx.play();
+        } catch {}
+      }
     }
   };
 
@@ -189,6 +284,43 @@ export default function TrueFalseGame3D({ onComplete }: TrueFalseGameProps) {
                 ✗ Sai
               </button>
             </div>
+
+            {/* Correction input for false statements */}
+            {requireCorrection &&
+              (questions[currentQuestion] as any).correctValue !==
+                undefined && (
+                <div className="mt-6">
+                  <div className="glass-card rounded-lg p-4 mb-3">
+                    <p className="text-white font-semibold text-sm text-center">
+                      {(questions[currentQuestion] as any).correctionPrompt ||
+                        "Nhập đáp án đúng"}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-2">
+                    <input
+                      type="number"
+                      value={correctionInput}
+                      onChange={(e) => setCorrectionInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") submitCorrection();
+                      }}
+                      placeholder="Nhập số đúng"
+                      className="px-4 py-2 rounded-lg font-bold text-center w-40 bg-white/90 text-slate-800 focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
+                    />
+                    <button
+                      onClick={submitCorrection}
+                      className="px-4 py-2 rounded-lg btn-glass text-sm font-bold"
+                    >
+                      Xác nhận
+                    </button>
+                  </div>
+                  {correctionError && (
+                    <p className="text-center text-sm text-rose-200 mt-2 font-bold">
+                      {correctionError}
+                    </p>
+                  )}
+                </div>
+              )}
           </div>
         </div>
 

@@ -47,14 +47,20 @@ export default function MathGame3D() {
             enablePan={false}
             autoRotate
             autoRotateSpeed={0.3}
+            maxPolarAngle={Math.PI * 0.6}
+            minPolarAngle={Math.PI * 0.4}
           />
         </Suspense>
       </Canvas>
 
       {/* UI Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-        {/* Score Display */}
-        <div className="absolute top-10 right-10 pointer-events-auto">
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-20">
+        {/* Score Display: shows always; on menu move to bottom-right to avoid title */}
+        <div
+          className={`absolute pointer-events-auto z-30 ${
+            gameMode === "menu" ? "bottom-6 right-6" : "top-10 right-10"
+          }`}
+        >
           <div className="score-badge px-10 py-5">
             <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500">
               ⭐ {score}

@@ -25,7 +25,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
   const leftItemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const rightItemsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [puzzleVisible, setPuzzleVisible] = useState(false);
-  const [revealedLetters, setRevealedLetters] = useState(0);
+  const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
   const [guessInput, setGuessInput] = useState("");
   const [isWordSolved, setIsWordSolved] = useState(false);
   const PUZZLE_TIME = 20; // seconds
@@ -61,8 +61,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 10 ÷ 5 = 2",
-      word: "CHIAHET",
-      wordHint: "Phép tính mà đáp án là số nguyên",
+      // Số dùng để chia — SỐ CHIA — S_ CH_A
+      word: "SOCHIA",
+      wordHint: "Số dùng để chia",
       pairs: [
         { original: 10, reduced: 2, operation: "giảm 5 lần" },
         { original: 8, reduced: 2, operation: "giảm 4 lần" },
@@ -72,8 +73,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 16 ÷ 4 = 4",
-      word: "BICHIA",
-      wordHint: "Số được lấy để thực hiện phép tính",
+      // Kết quả của phép chia — THƯƠNG — TH__NG
+      word: "THUONG",
+      wordHint: "Kết quả của phép chia",
       pairs: [
         { original: 16, reduced: 4, operation: "giảm 4 lần" },
         { original: 20, reduced: 4, operation: "giảm 5 lần" },
@@ -83,8 +85,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 15 ÷ 3 = 5",
-      word: "SOCHIA",
-      wordHint: "Số dùng để thực hiện phép tính",
+      // Phép tính ngược của phép nhân — PHÉP CHIA — PH_P CH_A
+      word: "PHEPCHIA",
+      wordHint: "Phép tính ngược của phép nhân",
       pairs: [
         { original: 15, reduced: 5, operation: "giảm 3 lần" },
         { original: 12, reduced: 4, operation: "giảm 3 lần" },
@@ -94,24 +97,13 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     {
       title: "Giảm số đi một số lần",
       description: "Ví dụ: 14 ÷ 7 = 2",
-      word: "CHIATRON",
-      wordHint: "Phép tính không còn thừa lại",
+      // Giảm một số đi nhiều lần — GIẢM LẦN — GI_M L_N
+      word: "GIAMLAN",
+      wordHint: "Giảm một số đi nhiều lần",
       pairs: [
         { original: 14, reduced: 2, operation: "giảm 7 lần" },
         { original: 24, reduced: 6, operation: "giảm 4 lần" },
         { original: 21, reduced: 3, operation: "giảm 7 lần" },
-      ],
-    },
-    {
-      title: "Giảm số đi một số lần",
-      description: "Ví dụ: 24 ÷ 8 = 3",
-      word: "KETQUA",
-      wordHint: "Điều ta nhận được sau khi tính xong",
-      pairs: [
-        { original: 24, reduced: 3, operation: "giảm 8 lần" },
-        { original: 20, reduced: 5, operation: "giảm 4 lần" },
-        { original: 18, reduced: 6, operation: "giảm 3 lần" },
-        { original: 16, reduced: 8, operation: "giảm 2 lần" },
       ],
     },
   ];
@@ -153,7 +145,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       setGuessingEnabled(false);
       // Reveal the crossword automatically when time is up
       setIsWordSolved(true);
-      setRevealedLetters(question.word.length);
+      setRevealedIndices(
+        Array.from({ length: question.word.length }, (_, i) => i)
+      );
       // Give 10s for user to view keyword before auto-advancing
       setPostRevealSeconds(10);
       return;
@@ -183,7 +177,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
         setFeedback(null);
         setQuestionsAnswered(questionsAnswered + 1);
         setPuzzleVisible(false);
-        setRevealedLetters(0);
+        setRevealedIndices([]);
         setGuessInput("");
         setIsWordSolved(false);
         setGuessingEnabled(true);
@@ -250,11 +244,26 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
       if (!puzzleVisible) {
         setPuzzleVisible(true);
       }
-      const newRevealCount = Math.min(
-        newConnections.length,
-        question.word.length
-      );
-      setRevealedLetters(newRevealCount);
+      // Reveal a non-adjacent letter index each time when possible
+      if (revealedIndices.length < question.word.length) {
+        const taken = new Set(revealedIndices);
+        const len = question.word.length;
+        const candidates: number[] = [];
+        for (let i = 0; i < len; i++) {
+          if (taken.has(i)) continue;
+          const leftNeighbor = i - 1;
+          const rightNeighbor = i + 1;
+          if (!taken.has(leftNeighbor) && !taken.has(rightNeighbor)) {
+            candidates.push(i);
+          }
+        }
+        const fallback: number[] = [];
+        for (let i = 0; i < question.word.length; i++)
+          if (!taken.has(i)) fallback.push(i);
+        const pool = candidates.length > 0 ? candidates : fallback;
+        const idx = pool[Math.floor(Math.random() * pool.length)];
+        setRevealedIndices([...revealedIndices, idx]);
+      }
       // Do not start timer yet; timer begins only when all connections are correct
 
       if (newConnections.length === question.pairs.length) {
@@ -273,7 +282,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
               setFeedback(null);
               setQuestionsAnswered(questionsAnswered + 1);
               setPuzzleVisible(false);
-              setRevealedLetters(0);
+              setRevealedIndices([]);
               setGuessInput("");
               setIsWordSolved(false);
               setGuessingEnabled(true);
@@ -310,7 +319,9 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
     if (guess === target) {
       setIsWordSolved(true);
       setFeedback("correct");
-      setRevealedLetters(question.word.length);
+      setRevealedIndices(
+        Array.from({ length: question.word.length }, (_, i) => i)
+      );
       if (correctSfx) {
         try {
           correctSfx.currentTime = 0;
@@ -329,7 +340,7 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
             setFeedback(null);
             setQuestionsAnswered(questionsAnswered + 1);
             setPuzzleVisible(false);
-            setRevealedLetters(0);
+            setRevealedIndices([]);
             setGuessInput("");
             setIsWordSolved(false);
             setGuessingEnabled(true);
@@ -515,18 +526,22 @@ export default function MatchingGame3D({ onComplete }: MatchingGameProps) {
 
             {/* Letters Row */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              {question.word.split("").map((ch, idx) => (
-                <div
-                  key={`ltr-${idx}`}
-                  className={`w-10 h-12 flex items-center justify-center rounded-lg border text-xl font-black tracking-widest shadow-md ${
-                    idx < revealedLetters || isWordSolved
-                      ? "bg-white text-slate-800 border-white/60"
-                      : "bg-white/10 text-white/70 border-white/30"
-                  }`}
-                >
-                  {idx < revealedLetters || isWordSolved ? ch : ""}
-                </div>
-              ))}
+              {question.word.split("").map((ch, idx) => {
+                const isRevealed =
+                  isWordSolved || revealedIndices.includes(idx);
+                return (
+                  <div
+                    key={`ltr-${idx}`}
+                    className={`w-10 h-12 flex items-center justify-center rounded-lg border text-xl font-black tracking-widest shadow-md ${
+                      isRevealed
+                        ? "bg-white text-slate-800 border-white/60"
+                        : "bg-white/10 text-white/70 border-white/30"
+                    }`}
+                  >
+                    {isRevealed ? ch : ""}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Hint */}

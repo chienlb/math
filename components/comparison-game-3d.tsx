@@ -13,6 +13,7 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
   const [feedback, setFeedback] = useState<"correct" | "incorrect" | null>(
     null
   );
+  const [numericInput, setNumericInput] = useState<string>("");
 
   // Sound effects
   const correctSfx = useMemo(
@@ -31,98 +32,65 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
   );
 
   const questions = [
+    // Section II
     {
-      question: "Số 6 lớn gấp mấy lần số 2?",
-      options: [2, 3, 4],
-      correct: 1,
-    },
-    {
-      question: "Muốn được 15 từ 3 thì nhân lên mấy lần?",
-      options: [3, 4, 5],
+      question: "Gấp 4 lên 3 lần được ___",
+      options: [6, 7, 12, 8],
       correct: 2,
     },
     {
-      question: "Số 20 là bội gấp mấy lần của 4?",
-      options: [4, 5, 6],
-      correct: 1,
+      question: "Gấp 5 lên 2 lần được ___",
+      options: [7, 8, 9, 10],
+      correct: 3,
     },
     {
-      question: "Từ 3 nhân lên mấy lần sẽ được 12?",
-      options: [3, 4, 5],
-      correct: 1,
-    },
-    // Added from user's scenarios as multiple choice
-    {
-      question: "Hùng có số bi gấp mấy lần Nam nếu Nam có 5 và Hùng có 15?",
-      options: [2, 3, 4],
-      correct: 1,
-    },
-    {
-      question: "Mẹ hơn Lan bao nhiêu lần tuổi nếu Lan 7 và mẹ 35?",
-      options: [4, 5, 6],
-      correct: 1,
-    },
-    {
-      question: "Từ 6 bông hoa, nhân lên mấy lần sẽ có 24 bông?",
-      options: [3, 4, 5],
-      correct: 1,
-    },
-    {
-      question: "Túi gạo 8kg cần nhân mấy lần để thành 16kg?",
-      options: [2, 3, 4],
-      correct: 0,
-    },
-    {
-      question: "Đoạn thẳng 4cm nhân mấy lần để thành 20cm?",
-      options: [4, 5, 6],
-      correct: 1,
-    },
-    {
-      question: "Từ 9 quyển vở, nhân lên mấy lần sẽ có 27 quyển?",
-      options: [2, 3, 4],
-      correct: 1,
-    },
-    {
-      question: "Cần nhân 5 lên mấy lần để được 10?",
-      options: [2, 3, 4],
-      correct: 0,
-    },
-    {
-      question: "Nhân 6 lên mấy lần sẽ ra 30?",
-      options: [4, 5, 6],
-      correct: 1,
-    },
-    {
-      question: "3 được nhân mấy lần để thành 24?",
-      options: [6, 7, 8],
+      question: "Gấp 6 lên 4 lần được ___",
+      options: [10, 18, 24, 26],
       correct: 2,
     },
     {
-      question: "Tính nhanh: 5 nhân 4 bằng bao nhiêu?",
-      options: [20, 25, 30],
+      question: "Gấp 7 lên 5 lần được ___",
+      options: [35, 30, 25, 40],
       correct: 0,
     },
     {
-      question: "Tính nhanh: 8 nhân 3 bằng bao nhiêu?",
-      options: [21, 24, 27],
-      correct: 1,
+      question: "Gấp 9 lên 3 lần được ___",
+      options: [18, 21, 24, 27],
+      correct: 3,
     },
     {
-      question: "Tính nhanh: 6 nhân 5 bằng bao nhiêu?",
-      options: [30, 35, 40],
+      question:
+        "Một bạn có 2 quyển vở. Số vở của bạn Lan gấp 5 lần số vở của bạn ấy. Lan có ___ quyển vở.",
+      options: [7, 8, 10, 9],
+      correct: 2,
+    },
+    {
+      question:
+        "Một con thỏ có 4 chân. 6 con thỏ có số chân gấp bao nhiêu lần số chân của 1 con thỏ?",
+      options: [3, 4, 5, 6],
+      correct: 3,
+    },
+    {
+      question:
+        "Một hàng có 8 cái ghế. Nếu gấp 3 lần số ghế đó thì có ___ cái ghế.",
+      options: [16, 20, 24, 28],
+      correct: 2,
+    },
+    {
+      question: "Một số khi gấp lên 4 lần được 20. Số đó là ___",
+      options: [4, 5, 6, 8],
+      correct: 1,
+      allowNumeric: true,
+      numericAnswer: 5,
+    },
+    {
+      question: "Một số khi gấp lên 6 lần được 42. Số đó là ___",
+      options: [7, 6, 8, 9],
       correct: 0,
+      allowNumeric: true,
+      numericAnswer: 7,
     },
-    {
-      question: "Tính nhanh: 7 nhân 2 bằng bao nhiêu?",
-      options: [12, 14, 16],
-      correct: 1,
-    },
-    {
-      question: "Tính nhanh: 3 nhân 9 bằng bao nhiêu?",
-      options: [24, 27, 30],
-      correct: 1,
-    },
-  ];
+  ] as const;
 
   const question = questions[currentQuestion];
 
@@ -143,6 +111,7 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
           setCurrentQuestion(currentQuestion + 1);
           setSelectedAnswer(null);
           setFeedback(null);
+          setNumericInput("");
         }
       }, 1500);
     } else {
@@ -156,7 +125,40 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
       setTimeout(() => {
         setSelectedAnswer(null);
         setFeedback(null);
+        setNumericInput("");
       }, 1000);
+    }
+  };
+
+  const submitNumeric = () => {
+    const q: any = questions[currentQuestion] as any;
+    if (!q.allowNumeric) return;
+    if (String(q.numericAnswer) === numericInput.trim()) {
+      setFeedback("correct");
+      if (correctSfx) {
+        try {
+          correctSfx.currentTime = 0;
+          correctSfx.play();
+        } catch {}
+      }
+      setTimeout(() => {
+        if (currentQuestion + 1 >= questions.length) {
+          onComplete(10);
+        } else {
+          setCurrentQuestion(currentQuestion + 1);
+          setSelectedAnswer(null);
+          setFeedback(null);
+          setNumericInput("");
+        }
+      }, 900);
+    } else {
+      setFeedback("incorrect");
+      if (wrongSfx) {
+        try {
+          wrongSfx.currentTime = 0;
+          wrongSfx.play();
+        } catch {}
+      }
     }
   };
 
@@ -168,10 +170,10 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
         {/* Header */}
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold text-white drop-shadow-lg mb-3">
-            ⚖️ So Sánh Số
+            🧠 Trắc Nghiệm Gấp Lên Nhiều Lần
           </h2>
           <p className="text-white/90 text-sm drop-shadow-md mb-4">
-            Chọn đáp án đúng
+            Chọn đáp án đúng (A, B, C, D)
           </p>
           <ProgressDots
             total={questions.length}
@@ -187,25 +189,60 @@ export default function ComparisonGame3D({ onComplete }: ComparisonGameProps) {
           </p>
         </div>
 
-        {/* Options */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {question.options.map((option, i) => (
-            <button
-              key={i}
-              onClick={() => handleAnswer(i)}
-              disabled={selectedAnswer !== null}
-              className={`py-5 px-4 rounded-xl font-bold text-2xl transition-all border shadow-lg comparison-glass ${
-                selectedAnswer === i
-                  ? feedback === "correct"
-                    ? "bg-emerald-500 text-white"
-                    : "bg-rose-500 text-white"
-                  : "text-white hover:bg-white/20 hover:shadow-xl"
-              }`}
-            >
-              {option}
-            </button>
-          ))}
+        {/* Options: 2x2 grid with labels A-D */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          {question.options.map((option, i) => {
+            const labels = ["A", "B", "C", "D"] as const;
+            return (
+              <button
+                key={i}
+                onClick={() => handleAnswer(i)}
+                disabled={selectedAnswer !== null}
+                className={`py-5 px-4 rounded-xl font-bold text-2xl transition-all border shadow-lg comparison-glass flex items-center justify-center gap-3 ${
+                  selectedAnswer === i
+                    ? feedback === "correct"
+                      ? "bg-emerald-500 text-white"
+                      : "bg-rose-500 text-white"
+                    : "text-white hover:bg-white/20 hover:shadow-xl"
+                }`}
+              >
+                <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/20 border border-white/30 text-lg font-black">
+                  {labels[i]}
+                </span>
+                <span>{option}</span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Numeric input for certain questions */}
+        {(questions[currentQuestion] as any).allowNumeric && (
+          <div className="mb-6 text-center">
+            <div className="glass-card rounded-lg p-4 mb-3">
+              <p className="text-white text-sm font-semibold">
+                Bạn cũng có thể nhập trực tiếp đáp án số
+              </p>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <input
+                type="number"
+                value={numericInput}
+                onChange={(e) => setNumericInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") submitNumeric();
+                }}
+                placeholder="Nhập số"
+                className="px-4 py-2 rounded-lg font-bold text-center w-40 bg-white/90 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+              <button
+                onClick={submitNumeric}
+                className="px-4 py-2 rounded-lg btn-glass text-sm font-bold"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Feedback */}
         {feedback && (
